@@ -8,7 +8,7 @@ pipeline {
         stage("clone code") {
             steps {
                 git branch: 'master',
-                    url: 'https://github.com/ValaxyTech/hello-world.git'
+                    url: 'https://github.com/caolucl/jenkins-deploy-war-tomcat'
             }
         }
         stage("build code") {
