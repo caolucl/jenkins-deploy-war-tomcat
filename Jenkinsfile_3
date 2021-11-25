@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+    environment {
+        PATH = "/usr/share/maven/bin:$PATH"
+        SSH_CONFIG_NAME = "localhost"
+    }
+
+    stages {
+        stage("clone code") {
+            steps {
+                git branch: 'master',
+                    url: 'https://github.com/caolucl/jenkins-deploy-war-tomcat.git'
+            }
+        }
+        stage("build code") {
+            /*
+            steps {
+                sh "mvn clean install"
+                
+            }
+            */
+            steps {
+                script {
+                    try {
+                    if(isUnix()){
+                          sh 'mvn clean package'
+                    }else{
+                       bat 'mvn clean package'
+                      }
+                    }
+                    catch(err) {
+                        throw err
+                    }
+                }    
+            }
+        }
+        
+         stage('SSH transfer') { //using scp
+			steps {
+				script {
+				sshPublisher(
+			   continueOnError: false, failOnError: true,
+			   publishers: [
+				sshPublisherDesc(
+				 configName: "${env.SSH_CONFIG_NAME}",
+				 //configName: "localhost",
+				 verbose: true,
+				 transfers: [
+				  sshTransfer(
+				   //sourceFiles: "webapp/target/**",
+				   sourceFiles: "webapp/target/*.war",
+				   removePrefix: "webapp/target/",
+				   remoteDirectory: "/home/luccao/maven/tomcat/",
+				   execCommand: 'cd home/luccao/maven/tomcat/;docker build -t valaxy_demo .; if [[ $( docker container inspect -f "{{.State.Running}}" valaxy_demo ) == "true" ]];  then   docker stop valaxy_demo && docker rm valaxy_demo && docker run -d --name valaxy_demo -p 9090:8080 valaxy_demo; else docker run -d --name valaxy_demo -p 9090:8080 valaxy_demo; fi'
+				  )
+				 ])
+			   ])
+			 }
+			}
+		}
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
