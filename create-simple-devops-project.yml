@@ -14,7 +14,7 @@
     ignore_errors: yes
 
   - name: remove current docker image
-    command: docker rmi acrlcaotest1.azurecr.io/simple-devops-image
+    command: docker rmi caolucl/simple-devops-image
     ignore_errors: yes
 
 #  - name: building docker image
@@ -22,7 +22,7 @@
 #    args:
 #      chdir: /home/lcao/mvn/prod1/
   - name: pull docker image from docker registry
-    command: docker pull acrlcaotest1.azurecr.io/simple-devops-image 
+    command: docker pull caolucl/simple-devops-image 
 
   - name: create docker using docker command
-    command: docker run -d --name simple-devops-container -p 8099:8080 acrlcaotest1.azurecr.io/simple-devops-image:latest
+    command: docker run -d --name simple-devops-container -p 8099:8080 caolucl/simple-devops-image:latest
