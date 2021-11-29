@@ -1,0 +1,21 @@
+---
+- hosts: all
+  become: true
+
+
+  tasks:
+
+  - name: create docker image war file
+    command: docker build -t simple-devops-image:latest .
+    args:
+      chdir: /home/lcao/mvn/prod1/
+
+  - name: create tag to image
+    command: docker tag simple-devops-image acrlcaotest1.azurecr.io/simple-devops-image
+
+  - name: push image to ACR
+    command: docker push acrlcaotest1.azurecr.io/simple-devops-image
+
+  - name: remove docker image in local server
+    command: docker rmi simple-devops-image:latest acrlcaotest1.azurecr.io/simple-devops-image --force
+    ignore_errors: yes
