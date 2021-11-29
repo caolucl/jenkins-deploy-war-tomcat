@@ -1,0 +1,101 @@
+pipeline {
+    agent any
+    environment {
+        PATH = "/usr/share/maven/bin:$PATH"
+        SSH_CONFIG_NAME = "localhost"
+    }
+
+    stages {
+        stage("clone code") {
+            steps {
+                git branch: 'master',
+                    url: 'https://github.com/caolucl/jenkins-deploy-war-tomcat.git'
+            }
+        }
+        stage("build code") {
+            /*
+            steps {
+                sh "mvn clean install"
+                
+            }
+            */
+            steps {
+                script {
+                    try {
+                    if(isUnix()){
+                          sh 'mvn clean package'
+                    }else{
+                       bat 'mvn clean package'
+                      }
+                    }
+                    catch(err) {
+                        throw err
+                    }
+                }    
+            }
+        }
+        /*
+        
+        stage("deploy") { //using copy on the same server
+            steps {
+                sh "cp -rf webapp/target/webapp.war /opt/tomcat/webapps "
+            }
+        }
+        */
+        /*
+        stage("deploy") { //copy id_rsa.pub to the .ssh root and using command ssh
+            steps {
+                //sh "cp -rf webapp/target/webapp.war /opt/tomcat/webapps "
+                sh "ls -la webapp/target"
+                sh "scp -P 22220 -r webapp/target/webapp.war  root@127.0.0.1:/opt/tomcat/webapps"
+            }
+        }
+        */
+        stage("copy-to-targetDir") { //copy id_rsa.pub to the .ssh root and using command ssh
+            steps {
+                //sh "cp -rf webapp/target/webapp.war /opt/tomcat/webapps "
+                sh "mkdir -p targetDir"
+                sh "cp -rf  webapp/target/webapp.war  targetDir"
+                sh "cp -rf  Dockerfile  targetDir"
+                sh "cp -rf  hosts  targetDir"
+                sh "cp -rf  create-docker-image--push.yml  targetDir"
+                sh "cp -rf  create-simple-devops-project.yml  targetDir"
+            }
+        }
+        stage('archive'){
+            steps{
+                archiveArtifacts artifacts: 'targetDir/**', fingerprint: true
+            }
+         }
+         stage('SSH transfer') { //using scp
+			steps {
+				script {
+				sshPublisher(
+			   continueOnError: false, failOnError: true,
+			   publishers: [
+				sshPublisherDesc(
+				 configName: "${env.SSH_CONFIG_NAME}",
+				 //configName: "localhost",
+				 verbose: true,
+				 transfers: [
+				  sshTransfer(
+				   //sourceFiles: "webapp/target/**",
+				   //sourceFiles: "webapp/target/*.war",
+				   sourceFiles: "targetDir/**",
+				   removePrefix: "targetDir/",
+				   remoteDirectory: "/home/luccao/maven/tomcat/",
+				   execCommand: 'cd home/luccao/maven/tomcat/;ansible-playbook create-docker-image--push.yml -i hosts ; ansible-playbook create-simple-devops-project.yml -i hosts'
+				  )
+				 ])
+			   ])
+			 }
+			}
+		}
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
