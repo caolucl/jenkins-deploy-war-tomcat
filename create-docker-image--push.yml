@@ -11,11 +11,11 @@
       chdir: /home/lcao/mvn/prod1/
 
   - name: create tag to image
-    command: docker tag simple-devops-image acrlcaotest1.azurecr.io/simple-devops-image
+    command: docker tag simple-devops-image caolucl/simple-devops-image
 
   - name: push image to ACR
-    command: docker push acrlcaotest1.azurecr.io/simple-devops-image
+    command: docker push caolucl/simple-devops-image
 
   - name: remove docker image in local server
-    command: docker rmi simple-devops-image:latest acrlcaotest1.azurecr.io/simple-devops-image --force
+    command: docker rmi simple-devops-image:latest caoluclo/simple-devops-image --force
     ignore_errors: yes
