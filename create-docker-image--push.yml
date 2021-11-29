@@ -8,7 +8,7 @@
   - name: create docker image war file
     command: docker build -t simple-devops-image:latest .
     args:
-      chdir: /home/lcao/mvn/prod1/
+      chdir: /root/home/luccao/maven/tomcat/
 
   - name: create tag to image
     command: docker tag simple-devops-image caolucl/simple-devops-image
