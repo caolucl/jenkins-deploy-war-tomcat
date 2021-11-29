@@ -17,5 +17,5 @@
     command: docker push caolucl/simple-devops-image
 
   - name: remove docker image in local server
-    command: docker rmi simple-devops-image:latest caoluclo/simple-devops-image --force
+    command: docker rmi simple-devops-image:latest caolucl/simple-devops-image --force
     ignore_errors: yes
